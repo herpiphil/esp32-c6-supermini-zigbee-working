@@ -44,6 +44,22 @@ Copied unchanged from C6Test2. Zigbee logic is chip-level, not board-level.
 
 ---
 
+## WARNING: Do Not Add Sleep Without an Escape Hatch
+
+Light sleep (esp_light_sleep_start) suspends USB on ESP32-C6. This makes JTAG
+inaccessible during sleep. Zigbee stored credentials cause fast (~1-2 second)
+rejoin, after which the device sleeps immediately — too short a window for JTAG
+to flash new firmware.
+
+Recovering requires the two-stage flash in flash.sh (erase zb_storage to force
+a 30-second scan window, then flash during that window). This is fragile and
+difficult.
+
+**Before adding any sleep: add a boot-time escape hatch** — e.g. hold the button
+at boot to keep the device awake for 30 seconds so it can be reflashed normally.
+
+---
+
 ## Sticking Points and Solutions
 
 ### 1. Build error: USBSerial not declared
